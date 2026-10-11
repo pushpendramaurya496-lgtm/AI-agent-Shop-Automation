@@ -6,8 +6,12 @@ exports.signup = async (req, res) => {
         if(!shopName || !ownerName || !phoneNumber || !password) {
             return res.status(400).json({ error: 'Saari fields daalna zaroori hai.' });
         }
-        const shop = await authService.signup(req.body);
-        res.status(201).json({ message: 'Dukan successfully register ho gayi!', shopId: shop._id });
+        const result = await authService.signup(req.body);
+        res.status(201).json({
+            message: result.message || 'Dukan ki registration request submit ho gayi hai! Super Admin ke approval ke baad account active hoga.',
+            shopId: result.shopId,
+            approvalStatus: result.approvalStatus
+        });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

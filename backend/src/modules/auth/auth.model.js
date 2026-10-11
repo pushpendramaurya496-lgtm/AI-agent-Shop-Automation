@@ -12,7 +12,7 @@ const authSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['shop_owner', 'admin', 'customer'],
+        enum: ['shop_owner', 'admin', 'super_admin', 'customer'],
         default: 'shop_owner'
     },
     resetPasswordOTP: {

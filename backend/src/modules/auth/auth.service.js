@@ -21,15 +21,24 @@ exports.signup = async (shopData) => {
     });
     await newAuth.save();
 
-    // Phir Shop record banayenge aur usko Auth ID se link karenge
+    // Phir Shop record banayenge aur uska status PENDING rakhenge
     const newShop = new Shop({
         authId: newAuth._id,
         shopName: shopData.shopName,
-        ownerName: shopData.ownerName
+        ownerName: shopData.ownerName,
+        category: shopData.category || 'Kirana / Grocery',
+        city: shopData.city || '',
+        address: shopData.address || '',
+        approvalStatus: 'PENDING' // Super Admin ke approval ke bina active nahi hoga
     });
     await newShop.save();
 
-    return { authId: newAuth._id, shopId: newShop._id };
+    return { 
+        authId: newAuth._id, 
+        shopId: newShop._id,
+        approvalStatus: newShop.approvalStatus,
+        message: 'Aapki dukan ki request darj ho gayi hai! Super Admin ke approval ke baad account active hoga.'
+    };
 };
 
 // 2. Login Service
@@ -43,10 +52,24 @@ exports.login = async (phoneNumber, password) => {
     // Dukandar ki details nikalne ke liye Shop find karenge
     const shop = await Shop.findOne({ authId: auth._id });
 
+    // Agar shop owner hai toh Super Admin ka approval check karein
+    if (auth.role === 'shop_owner' && shop) {
+        if (shop.approvalStatus === 'PENDING') {
+            throw new Error('Aapka account abhi PENDING hai! Kripya Super Admin ke approval ka intezar karein.');
+        }
+        if (shop.approvalStatus === 'REJECTED') {
+            const reason = shop.rejectionReason ? ` Wajah: ${shop.rejectionReason}` : '';
+            throw new Error(`Aapki dukan ki request reject ho chuki hai.${reason}`);
+        }
+        if (shop.approvalStatus === 'SUSPENDED') {
+            throw new Error('Aapka dukan account temporarily band (suspended) kar diya gaya hai. Super Admin se sampark karein.');
+        }
+    }
+
     const payload = { authId: auth._id, shopId: shop ? shop._id : null, role: auth.role };
     const token = jsonwebtoken.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
     
-    return { shop, token };
+    return { shop, token, role: auth.role };
 };
 
 // 3. Forgot Password Service (Generate OTP)

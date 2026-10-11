@@ -64,6 +64,34 @@ const shopSchema = new mongoose.Schema({
         type: Number,
         default: 0,
         min: 0
+    },
+    // Super Admin Approval System
+    approvalStatus: {
+        type: String,
+        enum: ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'],
+        default: 'PENDING',
+        index: true
+    },
+    category: {
+        type: String,
+        trim: true,
+        default: 'Kirana / Grocery'
+    },
+    city: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    approvedAt: {
+        type: Date
+    },
+    approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Auth'
+    },
+    rejectionReason: {
+        type: String,
+        default: ''
     }
 }, { timestamps: true });
 

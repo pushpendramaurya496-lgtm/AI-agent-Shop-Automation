@@ -10,6 +10,6 @@ app.listen(PORT, () => {
     console.log(`✅ Server successfully chal raha hai: http://localhost:${PORT}`);
     console.log(`📚 Swagger API Docs yahan dekhein: http://localhost:${PORT}/api-docs\n`);
     
-    // Server chalne ke baad database se connect karenge
+    // Server chalne ke baad database se connect karenge (Atlas cluster)
     connectDB();
 });
